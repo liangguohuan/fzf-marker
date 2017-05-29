@@ -17,12 +17,14 @@
 # Keybind:
 #   1.ctrl+space: marker select from fzf tty
 #   2.ctrl+v:     replace maker into real value
+#   3.ctrl+g:     move to next placeholder and set default val in {{}}
 #
 # Environment:
 #   # must before: export ZSH=$HOME/.oh-my-zsh if treat it as plugin
 #   export FZF_MARKER_CONF_DIR=~/.config/marker
 #   export FZF_MARKER_DISPLAY_KEY='\C-@'
 #   export FZF_MARKER_NEXT_PLACEHOLDER_KEY='\C-v'
+#   export FZF_MARKER_NEXT_PLACEHOLDER_DEFAULT_VAL_KEY='\C-g'
 #
 #===================================================================================================
 #
@@ -38,19 +40,30 @@ _fzf_marker_display() {
 }
 
 # move the cursor the next placeholder 
-function _fzf_move_cursor_to_next_placeholder {
+function _fzf_move_cursor_to_next_placeholder() {
     match=$(echo "$BUFFER" | perl -nle 'print $& if m{\{\{.+?\}\}}' | head -n 1)
     if [[ ! -z "$match" ]]; then
         len=${#match}
         match=$(echo "$match" | sed 's/"/\\"/g')
         placeholder_offset=$(echo "$BUFFER" | python -c 'import sys;keyboard_input = raw_input if sys.version_info[0] == 2 else input; print(keyboard_input().index("'$match'"))')
-        CURSOR="$placeholder_offset"
-        BUFFER="${BUFFER[1,$placeholder_offset]}${BUFFER[$placeholder_offset+1+$len,-1]}"
+        if [[ -n $1 ]]; then
+            CURSOR=$(($placeholder_offset + ${#match} - 4))
+            matchtrac=$(echo $match | tr -d '{}')
+        else
+            CURSOR="$placeholder_offset"
+            matchtrac=""
+        fi
+        BUFFER="${BUFFER[1,$placeholder_offset]}${matchtrac}${BUFFER[$placeholder_offset+1+$len,-1]}"
     fi        
 }
 
+function _fzf_move_cursor_to_next_placeholder_1() { _fzf_move_cursor_to_next_placeholder }
+function _fzf_move_cursor_to_next_placeholder_2() { _fzf_move_cursor_to_next_placeholder "defval" }
+
 zle -N _fzf_marker_display
-zle -N _fzf_move_cursor_to_next_placeholder
+zle -N _fzf_move_cursor_to_next_placeholder_1
+zle -N _fzf_move_cursor_to_next_placeholder_2
 bindkey "${FZF_MARKER_DISPLAY_KEY:-\C-@}" _fzf_marker_display
-bindkey "${FZF_MARKER_NEXT_PLACEHOLDER_KEY:-\C-v}" _fzf_move_cursor_to_next_placeholder
+bindkey "${FZF_MARKER_NEXT_PLACEHOLDER_KEY:-\C-v}" _fzf_move_cursor_to_next_placeholder_1
+bindkey "${FZF_MARKER_NEXT_PLACEHOLDER_DEFAULT_VAL_KEY:-\C-g}" _fzf_move_cursor_to_next_placeholder_2
 
