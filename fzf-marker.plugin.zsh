@@ -35,7 +35,7 @@
 # marker templete select
 _fzf_marker_main_widget() {
   if echo "$BUFFER" | grep -q -P "{{"; then
-    _fzf_marker_replace
+    _fzf_marker_placeholder
   else
     local selected
     if selected=$(cat ${FZF_MARKER_CONF_DIR:-~/.config/marker}/*.txt | 
@@ -48,7 +48,7 @@ _fzf_marker_main_widget() {
   fi
 }
 
-_fzf_marker_replace() {
+_fzf_marker_placeholder() {
   local strp pos placeholder
   strp=$(echo $BUFFER | grep -Z -P -b -o "\{\{[\w]+\}\}")
   strp=$(echo "$strp" | head -1)
@@ -63,7 +63,7 @@ _fzf_marker_replace() {
   fi
 }
 
-_fzf_marker_placeholder_widget() { _fzf_marker_replace "defval" }
+_fzf_marker_placeholder_widget() { _fzf_marker_placeholder "defval" }
 
 zle -N _fzf_marker_main_widget
 zle -N _fzf_marker_placeholder_widget
