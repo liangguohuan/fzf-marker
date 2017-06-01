@@ -5,6 +5,10 @@ Tweak https://github.com/pindexis/marker.git
 
 [![asciicast](https://asciinema.org/a/122370.png)](https://asciinema.org/a/122370)
 
+# Depends
+1.[zsh](http://www.zsh.org/) more powerful then bash  
+2.[fzf](https://github.com/junegunn/fzf) A command-line fuzzy finder written in Go
+
 # How to install?
 
   1.treat it as oh-my-zsh plugin
@@ -24,7 +28,8 @@ Tweak https://github.com/pindexis/marker.git
 show markers from fzf tty  
 OR  
 replace maker into real value if '{{' exists in cmdline  
-2.<kbd>ctrl+v</kbd>:     move to next placeholder and set default val in {{}} 
+2.<kbd>ctrl+v</kbd>:  
+move to next placeholder and set default val in {{}} 
 
 # Environment:
 
