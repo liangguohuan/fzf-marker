@@ -1,3 +1,4 @@
+# vim: fdm=marker ts=2 sw=2 sts=2 expandtab
 #===================================================================================================
 # fzf-marker: The terminal command
 # Tweak https://github.com/pindexis/marker.git
@@ -15,55 +16,57 @@
 #     [[ -s "fzf-marker.plugin.zsh" ]] && source "fzf-marker.plugin.zsh"
 #
 # Keybind:
-#   1.ctrl+space: marker select from fzf tty
-#   2.ctrl+v:     replace maker into real value
-#   3.ctrl+g:     move to next placeholder and set default val in {{}}
+#   1.ctrl+space: 
+#     show markers from fzf tty
+#     OR
+#     replace maker into real value if '{{' exists in cmdline
+#   2.ctrl+v:     move to next placeholder and set default val in {{}}
 #
 # Environment:
 #   # must before: export ZSH=$HOME/.oh-my-zsh if treat it as plugin
 #   export FZF_MARKER_CONF_DIR=~/.config/marker
-#   export FZF_MARKER_DISPLAY_KEY='\C-@'
-#   export FZF_MARKER_NEXT_PLACEHOLDER_KEY='\C-v'
-#   export FZF_MARKER_NEXT_PLACEHOLDER_DEFAULT_VAL_KEY='\C-g'
+#   export FZF_MARKER_COMMAND_COLOR='\x1b[38;5;255m'
+#   export FZF_MARKER_COMMENT_COLOR='\x1b[38;5;8m'
+#   export FZF_MARKER_MAIN_KEY='\C-@'
+#   export FZF_MARKER_PLACEHOLDER_KEY='\C-v'
 #
 #===================================================================================================
-#
+
 # marker templete select
-_fzf_marker_display() {
-  local selected
-  if selected=$(cat ${FZF_MARKER_CONF_DIR:-~/.config/marker}/*.txt | 
-      sed -e 's/\(^[a-zA-Z0-9_-]\+\)\s/\x1b[38;5;255m\1\x1b[0m /' -e 's/\s*\(#\+\)\(.*\)/\x1b[38;5;8m  \1\2\x1b[0m/' |
+_fzf_marker_main_widget() {
+  if echo "$BUFFER" | grep -q -P "{{"; then
+    _fzf_marker_replace
+  else
+    local selected
+    if selected=$(cat ${FZF_MARKER_CONF_DIR:-~/.config/marker}/*.txt | 
+      sed -e "s/\(^[a-zA-Z0-9_-]\+\)\s/${FZF_MARKER_COMMAND_COLOR:-\x1b[38;5;255m}\1\x1b[0m /" \
+          -e "s/\s*\(#\+\)\(.*\)/${FZF_MARKER_COMMENT_COLOR:-\x1b[38;5;8m}  \1\2\x1b[0m/" |
       fzf --bind 'tab:down,btab:up' --height=80% --ansi -q "$LBUFFER"); then
       LBUFFER=$(echo $selected | sed 's/\s*#.*//')
+    fi
+    zle redisplay
   fi
-  zle redisplay
 }
 
-# move the cursor the next placeholder 
-function _fzf_move_cursor_to_next_placeholder() {
-    match=$(echo "$BUFFER" | perl -nle 'print $& if m{\{\{.+?\}\}}' | head -n 1)
-    if [[ ! -z "$match" ]]; then
-        len=${#match}
-        match=$(echo "$match" | sed 's/"/\\"/g')
-        placeholder_offset=$(echo "$BUFFER" | python -c 'import sys;keyboard_input = raw_input if sys.version_info[0] == 2 else input; print(keyboard_input().index("'$match'"))')
-        if [[ -n $1 ]]; then
-            CURSOR=$(($placeholder_offset + ${#match} - 4))
-            matchtrac=$(echo $match | tr -d '{}')
-        else
-            CURSOR="$placeholder_offset"
-            matchtrac=""
-        fi
-        BUFFER="${BUFFER[1,$placeholder_offset]}${matchtrac}${BUFFER[$placeholder_offset+1+$len,-1]}"
-    fi        
+_fzf_marker_replace() {
+  local strp pos placeholder
+  strp=$(echo $BUFFER | grep -Z -P -b -o "\{\{[\w]+\}\}")
+  strp=$(echo "$strp" | head -1)
+  pos=$(echo $strp | cut -d ":" -f1)
+  placeholder=$(echo $strp | cut -d ":" -f2)
+  if [[ -n "$1" ]]; then  
+    BUFFER=$(echo $BUFFER | sed -e "s/{{//" -e "s/}}//")
+    CURSOR=$(($pos + ${#placeholder} - 4))
+  else
+    BUFFER=$(echo $BUFFER | sed "s/$placeholder//")
+    CURSOR=pos
+  fi
 }
 
-function _fzf_move_cursor_to_next_placeholder_1() { _fzf_move_cursor_to_next_placeholder }
-function _fzf_move_cursor_to_next_placeholder_2() { _fzf_move_cursor_to_next_placeholder "defval" }
+_fzf_marker_placeholder_widget() { _fzf_marker_replace "defval" }
 
-zle -N _fzf_marker_display
-zle -N _fzf_move_cursor_to_next_placeholder_1
-zle -N _fzf_move_cursor_to_next_placeholder_2
-bindkey "${FZF_MARKER_DISPLAY_KEY:-\C-@}" _fzf_marker_display
-bindkey "${FZF_MARKER_NEXT_PLACEHOLDER_KEY:-\C-v}" _fzf_move_cursor_to_next_placeholder_1
-bindkey "${FZF_MARKER_NEXT_PLACEHOLDER_DEFAULT_VAL_KEY:-\C-g}" _fzf_move_cursor_to_next_placeholder_2
+zle -N _fzf_marker_main_widget
+zle -N _fzf_marker_placeholder_widget
+bindkey "${FZF_MARKER_MAIN_KEY:-\C-@}" _fzf_marker_main_widget
+bindkey "${FZF_MARKER_PLACEHOLDER_KEY:-\C-v}" _fzf_marker_placeholder_widget
 
