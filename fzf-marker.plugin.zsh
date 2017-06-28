@@ -50,7 +50,7 @@ _fzf_marker_main_widget() {
 
 _fzf_marker_placeholder() {
   local strp pos placeholder
-  strp=$(echo $BUFFER | grep -Z -P -b -o "\{\{[\w]+\}\}")
+  strp=$(echo $BUFFER | grep -Z -P -b -o "\{\{[^\{\}]+\}\}")
   strp=$(echo "$strp" | head -1)
   pos=$(echo $strp | cut -d ":" -f1)
   placeholder=$(echo $strp | cut -d ":" -f2)
