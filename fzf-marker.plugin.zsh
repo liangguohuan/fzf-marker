@@ -53,7 +53,7 @@ _fzf_marker_placeholder() {
   strp=$(echo $BUFFER | grep -Z -P -b -o "\{\{[^\{\}]+\}\}")
   strp=$(echo "$strp" | head -1)
   pos=$(echo $strp | cut -d ":" -f1)
-  placeholder=$(echo $strp | cut -d ":" -f2)
+  placeholder=${strp#*:}
   if [[ -n "$1" ]]; then  
     BUFFER=$(echo $BUFFER | sed -e "s/{{//" -e "s/}}//")
     CURSOR=$(($pos + ${#placeholder} - 4))
