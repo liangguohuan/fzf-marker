@@ -55,10 +55,10 @@ _fzf_marker_placeholder() {
   pos=$(echo $strp | cut -d ":" -f1)
   placeholder=${strp#*:}
   if [[ -n "$1" ]]; then  
-    BUFFER=$(echo $BUFFER | sed -e "s/{{//" -e "s/}}//")
+    BUFFER=$(echo -E $BUFFER | sed -e "s/{{//" -e "s/}}//")
     CURSOR=$(($pos + ${#placeholder} - 4))
   else
-    BUFFER=$(echo $BUFFER | sed "s/$placeholder//")
+    BUFFER=$(echo -E $BUFFER | sed "s/$placeholder//")
     CURSOR=pos
   fi
 }
