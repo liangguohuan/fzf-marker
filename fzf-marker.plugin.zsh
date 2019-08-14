@@ -58,6 +58,7 @@ _fzf_marker_placeholder() {
     BUFFER=$(echo -E $BUFFER | sed -e "s/{{//" -e "s/}}//")
     CURSOR=$(($pos + ${#placeholder} - 4))
   else
+    placeholder=$(echo ${placeholder//\//\\/})
     BUFFER=$(echo -E $BUFFER | sed "s/$placeholder//")
     CURSOR=pos
   fi
