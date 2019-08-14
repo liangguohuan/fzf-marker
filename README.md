@@ -21,6 +21,11 @@ Tweak https://github.com/pindexis/marker.git
   ```sh
     [[ -s "fzf-marker.plugin.zsh" ]] && source "fzf-marker.plugin.zsh"
   ```
+# Macos: There is something needed to be done
+```sh
+  $ brew install grep
+  $ ln -s /usr/local/Cellar/grep/3.3/bin/ggrep /usr/local/bin/grep
+```
 
 # Keybind:
 
