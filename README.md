@@ -24,7 +24,7 @@ Tweak https://github.com/pindexis/marker.git
 # Macos: There is something needed to be done
 ```sh
   $ brew install grep
-  $ ln -s /usr/local/Cellar/grep/3.3/bin/ggrep /usr/local/bin/grep
+  $ ln -sf /opt/homebrew/bin/ggrep /usr/local/bin/grep
 ```
 
 # Keybind:
@@ -46,4 +46,3 @@ move to next placeholder and set default val in {{}}
   export FZF_MARKER_MAIN_KEY='\C-@'
   export FZF_MARKER_PLACEHOLDER_KEY='\C-v'
   ```
-
